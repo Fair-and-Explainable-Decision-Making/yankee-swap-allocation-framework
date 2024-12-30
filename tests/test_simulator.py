@@ -9,9 +9,9 @@ def test_renaissance_man(
     section: Section,
     slot: Slot,
     weekday: Weekday,
-    schedule: ScheduleItem,
+    schedule: list[ScheduleItem],
 ):
-    topic_list = [["250", "301"], ["611"]]
+    topic_list = [[schedule[0], schedule[2]], [schedule[4]]]
     quantities = [1, 1]
     lower_max_courses = 1
     upper_max_courses = 2
@@ -28,6 +28,7 @@ def test_renaissance_man(
             lower_max_courses,
             upper_max_courses,
             course,
+            section,
             global_constraints,
             schedule,
             i,
@@ -42,26 +43,24 @@ def test_renaissance_man(
         lower_max_courses,
         upper_max_courses,
         course,
+        section,
         [],
         schedule,
         0,
     )
     for i, quant in enumerate(student.quantities):
-        items = [
-            item
-            for item in schedule
-            if item.value(course) in student.preferred_topics[i]
-        ]
+        items = [item for item in schedule if item in student.preferred_topics[i]]
         assert student.value(items) == quant
 
 
 def test_renaissance_man_memoing(
     course: Course,
+    section: Section,
     slot: Slot,
     weekday: Weekday,
-    schedule: ScheduleItem,
+    schedule: list[ScheduleItem],
 ):
-    topic_list = [["250", "301"], ["611"]]
+    topic_list = [[schedule[0], schedule[2]], [schedule[4]]]
     quantities = [1, 1]
     lower_max_courses = 1
     upper_max_courses = 2
@@ -76,6 +75,7 @@ def test_renaissance_man_memoing(
         lower_max_courses,
         upper_max_courses,
         course,
+        section,
         global_constraints,
         schedule,
         memoize=False,
@@ -90,6 +90,7 @@ def test_renaissance_man_memoing(
         lower_max_courses,
         upper_max_courses,
         course,
+        section,
         global_constraints,
         schedule,
     )
@@ -106,14 +107,13 @@ def test_sub_student(
     renaissance3: RenaissanceMan,
     schedule: list[ScheduleItem],
     course: Course,
+    section: Section,
     slot: Slot,
     weekday: Weekday,
 ):
     bundle = [item for item in schedule if item.values[0] == "301"]
 
     reduced_schedule = sub_schedule([bundle])
-
-    course_strings = sorted([item.values[0] for item in reduced_schedule])
 
     course_time_constr = CourseTimeConstraint.from_items(
         reduced_schedule, slot, weekday
@@ -125,12 +125,13 @@ def test_sub_student(
     new_student = SubStudent(
         renaissance3.quantities,
         [
-            [item for item in pref if item in course_strings]
-            for pref in renaissance3.preferred_topics
+            [item for item in reduced_schedule if item in topic]
+            for topic in renaissance3.preferred_topics
         ],
-        list(set(course_strings) & set(renaissance3.preferred_courses)),
+        [item for item in reduced_schedule if item in renaissance3.preferred_courses],
         renaissance3.total_courses,
         course,
+        section,
         [course_time_constr, course_sect_constr],
         reduced_schedule,
     )

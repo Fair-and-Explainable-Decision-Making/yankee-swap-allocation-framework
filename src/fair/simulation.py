@@ -4,7 +4,7 @@ import numpy as np
 
 from fair.agent import BaseAgent
 from fair.constraint import LinearConstraint, PreferenceConstraint
-from fair.feature import BaseFeature, Course
+from fair.feature import BaseFeature, Course, Section
 from fair.item import ScheduleItem
 from fair.valuation import ConstraintSatifactionValuation
 
@@ -34,6 +34,7 @@ class RenaissanceMan(SimulatedAgent):
         lower_max_courses: int,
         upper_max_courses: int,
         course: Course,
+        section: Section,
         global_constraints: List[LinearConstraint],
         schedule: List[ScheduleItem],
         seed: int | None = None,
@@ -47,6 +48,7 @@ class RenaissanceMan(SimulatedAgent):
             lower_max_courses (int): Lower bound for random selection of maximum number of courses (inclusive)
             upper_max_courses (int): Upper bound for random selection of maximum number of courses (inclusive)
             course (Course): Feature for course
+            section (Section): Feature for section
             global_constraints (List[LinearConstraint]): Constraints not specific to this agent
             schedule (List[ScheduleItem], optional): All possible items in the student's schedule. Defaults to None.
             seed (int | None, optional): Random seed. Defaults to None.
@@ -67,27 +69,35 @@ class RenaissanceMan(SimulatedAgent):
             self.preferred_courses += topic
 
         self.total_courses = rng.integers(lower_max_courses, upper_max_courses + 1)
-        all_courses = [item.value(course) for item in schedule]
+        all_courses = [(item.value(course), item.value(section)) for item in schedule]
         self.all_courses_constraint = PreferenceConstraint.from_item_lists(
             schedule,
             [all_courses],
             [self.total_courses],
-            course,
+            [course, section],
             sparse,
         )
-        undesirable_courses = list(set(all_courses).difference(self.preferred_courses))
+        undesirable_courses = [
+            (item.value(course), item.value(section))
+            for item in schedule
+            if item not in self.preferred_courses
+        ]
         self.undesirable_courses_constraint = PreferenceConstraint.from_item_lists(
             schedule,
             [undesirable_courses],
             [0],
-            course,
+            [course, section],
             sparse,
         )
+        topic_values = [
+            [(item.value(course), item.value(section)) for item in topic]
+            for topic in self.preferred_topics
+        ]
         self.topic_constraint = PreferenceConstraint.from_item_lists(
             schedule,
-            self.preferred_topics,
+            topic_values,
             self.quantities,
-            course,
+            [course, section],
             sparse,
         )
 
@@ -112,6 +122,7 @@ class SubStudent(SimulatedAgent):
         preferred_courses,
         total_courses,
         course: Course,
+        section: Section,
         global_constraints: List[LinearConstraint],
         schedule: List[ScheduleItem],
         sparse: bool = False,
@@ -124,6 +135,7 @@ class SubStudent(SimulatedAgent):
             preferred_courses (List[ScheduleItem]): A list of preferred courses
             total_courses (int): maximum number of courses (inclusive)
             course (Course): Feature for course
+            section (Section): Feature for section
             global_constraints (List[LinearConstraint]): Constraints not specific to this agent
             schedule (List[ScheduleItem], optional): All possible items in the student's schedule. Defaults to None.
             sparse (bool, optional): Should sparse matrices be used for constraints. Defaults to False.
@@ -135,28 +147,36 @@ class SubStudent(SimulatedAgent):
         self.preferred_courses = preferred_courses
         self.total_courses = total_courses
 
-        all_courses = [item.value(course) for item in schedule]
+        all_courses = [(item.value(course), item.value(section)) for item in schedule]
 
         self.all_courses_constraint = PreferenceConstraint.from_item_lists(
             schedule,
             [all_courses],
             [self.total_courses],
-            course,
+            [course, section],
             sparse,
         )
-        undesirable_courses = list(set(all_courses).difference(self.preferred_courses))
+        undesirable_courses = [
+            (item.value(course), item.value(section))
+            for item in schedule
+            if item not in self.preferred_courses
+        ]
         self.undesirable_courses_constraint = PreferenceConstraint.from_item_lists(
             schedule,
             [undesirable_courses],
             [0],
-            course,
+            [course, section],
             sparse,
         )
+        topic_values = [
+            [(item.value(course), item.value(section)) for item in topic]
+            for topic in self.preferred_topics
+        ]
         self.topic_constraint = PreferenceConstraint.from_item_lists(
             schedule,
-            self.preferred_topics,
+            topic_values,
             self.quantities,
-            course,
+            [course, section],
             sparse,
         )
 

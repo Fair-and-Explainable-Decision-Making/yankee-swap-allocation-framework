@@ -45,7 +45,7 @@ def test_memoization(
     schedule_item250: ScheduleItem, all_items: List[ScheduleItem], course: Course
 ):
     constraint = PreferenceConstraint.from_item_lists(
-        all_items, [["250", "301"]], [1], course
+        all_items, [[("250",), ("301",)]], [1], [course]
     )
     valuation = ConstraintSatifactionValuation([constraint])
     valuation.value([schedule_item250])
@@ -55,7 +55,7 @@ def test_memoization(
     assert valuation._unique_value_ct == 1
 
     constraint = PreferenceConstraint.from_item_lists(
-        all_items, [["250", "301", "611"]], [2], course
+        all_items, [[("250",), ("301",), ("611",)]], [2], [course]
     )
     valuation = ConstraintSatifactionValuation([constraint])
     valuation.value(all_items)
@@ -71,7 +71,7 @@ def test_disable_memoize(
     schedule_item250: ScheduleItem, all_items: List[ScheduleItem], course: Course
 ):
     constraint = PreferenceConstraint.from_item_lists(
-        all_items, [["250", "301"]], [1], course
+        all_items, [[("250",), ("301",)]], [1], [course]
     )
     valuation = ConstraintSatifactionValuation([constraint], memoize=False)
     valuation.value([schedule_item250])
@@ -85,7 +85,7 @@ def test_reset_memo_cache(
     schedule_item250: ScheduleItem, all_items: List[ScheduleItem], course: Course
 ):
     constraint = PreferenceConstraint.from_item_lists(
-        all_items, [["250", "301"]], [1], course
+        all_items, [[("250",), ("301",)]], [1], [course]
     )
     valuation = ConstraintSatifactionValuation([constraint], memoize=False)
     valuation.value([schedule_item250])

@@ -1,8 +1,9 @@
-import numpy as np
 import copy
 
+import numpy as np
+
 from .agent import BaseAgent, LegacyStudent
-from .allocation import get_bundle_from_allocation_matrix, general_yankee_swap_E
+from .allocation import general_yankee_swap_E, get_bundle_from_allocation_matrix
 from .constraint import CourseTimeConstraint, MutualExclusivityConstraint
 from .item import ScheduleItem, sub_schedule
 from .simulation import SubStudent
@@ -102,7 +103,7 @@ def yankee_swap_sub_problem(
     Returns:
         int: Agent's MMS for the subproblem
     """
-    course, slot, weekday, _ = new_schedule[0].features
+    course, slot, weekday, section = new_schedule[0].features
 
     course_time_constr = CourseTimeConstraint.from_items(new_schedule, slot, weekday)
     course_sect_constr = MutualExclusivityConstraint.from_items(new_schedule, course)
@@ -110,12 +111,13 @@ def yankee_swap_sub_problem(
     new_student = SubStudent(
         agent.student.quantities,
         [
-            [item for item in pref if item in course_strings]
-            for pref in agent.student.preferred_topics
+            [item for item in topic if item in new_schedule]
+            for topic in agent.student.preferred_topics
         ],
-        list(set(course_strings) & set(preferred)),
+        [item for item in preferred if item in new_schedule],
         agent.student.total_courses,
         course,
+        section,
         [course_time_constr, course_sect_constr],
         new_schedule,
     )

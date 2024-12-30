@@ -92,6 +92,11 @@ def bundle_250_301_2(schedule_item250: ScheduleItem, schedule_item301_2: Schedul
 
 
 @pytest.fixture
+def bundle_250_301_3(schedule_item250_2: ScheduleItem, schedule_item301: ScheduleItem):
+    return [schedule_item250_2, schedule_item301]
+
+
+@pytest.fixture
 def bundle_250_250_2(schedule_item250: ScheduleItem, schedule_item250_2: ScheduleItem):
     return [schedule_item250, schedule_item250_2]
 
@@ -104,14 +109,14 @@ def bundle_301_611(schedule_item301: ScheduleItem, schedule_item611: ScheduleIte
 @pytest.fixture
 def all_courses_constraint(course: Course, all_items: list[ScheduleItem]):
     return PreferenceConstraint.from_item_lists(
-        all_items, [["250", "301", "611"]], [2], course
+        all_items, [[("250",), ("301",), ("611",)]], [2], [course]
     )
 
 
 @pytest.fixture
 def linear_constraint_250_301(course: Course, bundle_250_301: list[ScheduleItem]):
     return PreferenceConstraint.from_item_lists(
-        bundle_250_301, [["250", "301"]], [1], course
+        bundle_250_301, [[("250",), ("301",)]], [1], [course]
     )
 
 
@@ -225,13 +230,15 @@ def renaissance1(
     schedule: List[ScheduleItem],
     global_constraints: List[LinearConstraint],
     course: Course,
+    section: Section,
 ):
     return RenaissanceMan(
-        [["250", "301"], ["611"]],
+        [[schedule[0], schedule[2]], [schedule[4]]],
         [1, 1],
         1,
         2,
         course,
+        section,
         global_constraints,
         schedule,
         seed=0,
@@ -243,13 +250,15 @@ def renaissance2(
     schedule: List[ScheduleItem],
     global_constraints: List[LinearConstraint],
     course: Course,
+    section: Section,
 ):
     return RenaissanceMan(
-        [["250", "301"], ["611"]],
+        [[schedule[0], schedule[2]], [schedule[4]]],
         [1, 1],
         1,
         2,
         course,
+        section,
         global_constraints,
         schedule,
         seed=1,
@@ -261,13 +270,15 @@ def renaissance3(
     schedule: List[ScheduleItem],
     global_constraints: List[LinearConstraint],
     course: Course,
+    section: Section,
 ):
     return RenaissanceMan(
-        [["250", "301"], ["611"]],
+        [[schedule[0], schedule[2]], [schedule[4]]],
         [1, 1],
         2,
         3,
         course,
+        section,
         global_constraints,
         schedule,
         seed=0,
@@ -279,13 +290,17 @@ def student(
     simple_schedule: list[ScheduleItem],
     simple_global_constraints: list[LinearConstraint],
     course: Course,
+    section: Section,
+    schedule_item250: ScheduleItem,
+    schedule_item301: ScheduleItem,
 ):
     return RenaissanceMan(
-        [["250", "301"]],
+        [[schedule_item250, schedule_item301]],
         [1],
         1,
         1,
         course,
+        section,
         simple_global_constraints,
         simple_schedule,
         seed=0,
@@ -297,13 +312,17 @@ def student2(
     simple_schedule: list[ScheduleItem],
     simple_global_constraints: list[LinearConstraint],
     course: Course,
+    section: Section,
+    schedule_item301: ScheduleItem,
+    schedule_item611: ScheduleItem,
 ):
     return RenaissanceMan(
-        [["301", "611"]],
+        [[schedule_item301, schedule_item611]],
         [1],
         1,
         1,
         course,
+        section,
         simple_global_constraints,
         simple_schedule,
         seed=1,
@@ -315,13 +334,17 @@ def student3(
     simple_schedule2: list[ScheduleItem],
     simple_global_constraints: list[LinearConstraint],
     course: Course,
+    section: Section,
+    schedule_item250_2: ScheduleItem,
+    schedule_item301: ScheduleItem,
 ):
     return RenaissanceMan(
-        [["250", "301"]],
+        [[schedule_item250_2, schedule_item301]],
         [1],
         1,
         1,
         course,
+        section,
         simple_global_constraints,
         simple_schedule2,
         seed=2,

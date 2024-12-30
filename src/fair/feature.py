@@ -34,6 +34,9 @@ class BaseFeature:
     def __hash__(self):
         return hash(self.name) ^ hash(tuple(self.domain))
 
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
 
 class Course(BaseFeature):
     """Ordered space of courses"""

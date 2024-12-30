@@ -14,8 +14,8 @@ from fair.simulation import RenaissanceMan
 from fair.stats.survey import Corpus, SingleTopicSurvey
 
 NUM_RAND_SAMP = 100
-NUM_SUB_KERNELS = 10
-SAMPLE_PER_STUDENT = 100
+NUM_SUB_KERNELS = 1
+SAMPLE_PER_STUDENT = 10
 
 NUM_STUDENTS = 5
 MAX_COURSES_PER_TOPIC = 5
@@ -43,19 +43,18 @@ features = [course, slot, weekday, section]
 
 # construct schedule
 schedule = []
-topic_map = defaultdict(set)
+topic_map = defaultdict(list)
 for idx, (_, row) in enumerate(df.iterrows()):
     crs = str(row["Catalog"])
-    topic_map[row["Categories"]].add(crs)
     slt = slots_for_time_range(row["Mtg Time"], slot.times)
     sec = row["Section"]
     capacity = row["CICScapacity"]
     dys = tuple([day.strip() for day in row["zc.days"].split(" ")])
-    schedule.append(
-        ScheduleItem(features, [crs, slt, dys, sec], index=idx, capacity=capacity)
-    )
+    item = ScheduleItem(features, [crs, slt, dys, sec], index=idx, capacity=capacity)
+    schedule.append(item)
+    topic_map[row["Categories"]].append(item)
 
-topics = sorted([sorted(list(courses)) for courses in topic_map.values()])
+topics = [topic for topic in topic_map.values()]
 
 # global constraints
 course_time_constr = CourseTimeConstraint.from_items(schedule, slot, weekday, SPARSE)
@@ -70,6 +69,7 @@ for i in range(NUM_STUDENTS):
         LOWER_MAX_COURSES_TOTAL,
         UPPER_MAX_COURSES_TOTAL,
         course,
+        section,
         [course_time_constr, course_sect_constr],
         schedule,
         seed=i,

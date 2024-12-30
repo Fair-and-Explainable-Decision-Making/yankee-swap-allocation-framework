@@ -10,13 +10,15 @@ def test_single_topic_survey(
     simple_schedule: list[ScheduleItem], student: RenaissanceMan, course: Course
 ):
     survey = SingleTopicSurvey.from_student(simple_schedule, student, 0, 1)
-    preference_mask = [
-        item.value(course) in student.preferred_courses for item in simple_schedule
-    ]
+    responses = survey.data().flatten()
 
     assert survey.limit == student.total_courses
-    assert [survey.response_map[item] for item in simple_schedule] == preference_mask
-    assert np.array_equal(survey.data().flatten(), np.array(preference_mask))
+    for i, item in enumerate(simple_schedule):
+        if survey.response_map[item]:
+            assert item in student.preferred_courses
+            assert responses[i] == 1
+        else:
+            assert responses[i] == 0
 
 
 def test_corpus_validation(

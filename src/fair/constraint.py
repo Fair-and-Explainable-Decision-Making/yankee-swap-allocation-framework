@@ -189,9 +189,9 @@ class PreferenceConstraint(LinearConstraint):
     @staticmethod
     def from_item_lists(
         schedule: List[BaseItem],
-        preferred_values: List[List[Any]],
+        preferred_values: List[List[tuple[Any]]],
         limits: List[int],
-        preferred_feature: BaseFeature,
+        preferred_features: List[BaseFeature],
         sparse: bool = False,
     ):
         """A helper method for constructing preference constraints
@@ -201,9 +201,9 @@ class PreferenceConstraint(LinearConstraint):
 
         Args:
             schedule: (List[BaseItem], optional): Universe of all items under consideration
-            preferred_values (List[List[Any]]): Each list is a category and values in that list are preferred
+            preferred_values List[List[tuple[Any]]]): Each sublist contains a tuple of preferred values in feature order
             limits (List[int]): The maximum number of items desired per category
-            preferred_feature (BaseFeature): The feaure in terms of which preferred values are expressed
+            preferred_features (List[BaseFeature]): The feaures in terms of which preferred values are expressed
             sparse (bool): Should A and b be sparse matrices. Defaults to False.
 
         Raises:
@@ -221,9 +221,13 @@ class PreferenceConstraint(LinearConstraint):
         b = dok_array((rows, 1), dtype=np.int_)
 
         for i in range(rows):
-            for value in preferred_values[i]:
+            for values in preferred_values[i]:
                 for item in schedule:
-                    if item.value(preferred_feature) == value:
+                    match = True
+                    for j, feature in enumerate(preferred_features):
+                        if item.value(feature) != values[j]:
+                            match = False
+                    if match:
                         A[
                             i,
                             item.index,

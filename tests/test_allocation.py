@@ -1,9 +1,9 @@
 from fair.agent import LegacyStudent
 from fair.allocation import (
-    serial_dictatorship,
     general_yankee_swap,
     general_yankee_swap_E,
     round_robin,
+    serial_dictatorship,
 )
 from fair.feature import Course
 from fair.item import ScheduleItem
@@ -28,8 +28,8 @@ def test_general_yankee_swap(
     assert sum(alloc2) <= renaissance2.total_courses
 
     # only preferred courses are allocated
-    courses1 = [schedule[i].value(course) for i in range(len(alloc1)) if alloc1[i] == 1]
-    courses2 = [schedule[i].value(course) for i in range(len(alloc2)) if alloc2[i] == 1]
+    courses1 = [schedule[i] for i in range(len(alloc1)) if alloc1[i] == 1]
+    courses2 = [schedule[i] for i in range(len(alloc2)) if alloc2[i] == 1]
     assert set(courses1) <= set(renaissance1.preferred_courses)
     assert set(courses2) <= set(renaissance2.preferred_courses)
 
@@ -52,8 +52,8 @@ def test_general_yankee_swap_E(
     assert sum(alloc2) <= renaissance2.total_courses
 
     # only preferred courses are allocated
-    courses1 = [schedule[i].value(course) for i in range(len(alloc1)) if alloc1[i] == 1]
-    courses2 = [schedule[i].value(course) for i in range(len(alloc2)) if alloc2[i] == 1]
+    courses1 = [schedule[i] for i in range(len(alloc1)) if alloc1[i] == 1]
+    courses2 = [schedule[i] for i in range(len(alloc2)) if alloc2[i] == 1]
     assert set(courses1) <= set(renaissance1.preferred_courses)
     assert set(courses2) <= set(renaissance2.preferred_courses)
 
@@ -76,8 +76,8 @@ def test_round_robin_swap(
     assert sum(alloc2) <= renaissance2.total_courses
 
     # only preferred courses are allocated
-    courses1 = [schedule[i].value(course) for i in range(len(alloc1)) if alloc1[i] == 1]
-    courses2 = [schedule[i].value(course) for i in range(len(alloc2)) if alloc2[i] == 1]
+    courses1 = [schedule[i] for i in range(len(alloc1)) if alloc1[i] == 1]
+    courses2 = [schedule[i] for i in range(len(alloc2)) if alloc2[i] == 1]
     assert set(courses1) <= set(renaissance1.preferred_courses)
     assert set(courses2) <= set(renaissance2.preferred_courses)
 
@@ -100,7 +100,7 @@ def test_serial_dictatorship_swap(
     assert sum(alloc2) <= renaissance2.total_courses
 
     # only preferred courses are allocated
-    courses1 = [schedule[i].value(course) for i in range(len(alloc1)) if alloc1[i] == 1]
-    courses2 = [schedule[i].value(course) for i in range(len(alloc2)) if alloc2[i] == 1]
+    courses1 = [schedule[i] for i in range(len(alloc1)) if alloc1[i] == 1]
+    courses2 = [schedule[i] for i in range(len(alloc2)) if alloc2[i] == 1]
     assert set(courses1) <= set(renaissance1.preferred_courses)
     assert set(courses2) <= set(renaissance2.preferred_courses)

@@ -4,16 +4,8 @@ from collections import defaultdict
 import pandas as pd
 
 from fair.agent import LegacyStudent
-from fair.allocation import general_yankee_swap_E, serial_dictatorship, round_robin
+from fair.allocation import general_yankee_swap_E, round_robin, serial_dictatorship
 from fair.constraint import CourseTimeConstraint, MutualExclusivityConstraint
-from fair.feature import Course, Section, Slot, Weekday, slots_for_time_range
-from fair.item import ScheduleItem
-from fair.metrics import (
-    leximin,
-    nash_welfare,
-    utilitarian_welfare,
-    PMMS_violations,
-)
 from fair.envy import (
     EF_1_agents,
     EF_1_count,
@@ -22,6 +14,9 @@ from fair.envy import (
     EF_X_agents,
     EF_X_count,
 )
+from fair.feature import Course, Section, Slot, Weekday, slots_for_time_range
+from fair.item import ScheduleItem
+from fair.metrics import PMMS_violations, leximin, nash_welfare, utilitarian_welfare
 from fair.optimization import StudentAllocationProgram
 from fair.simulation import RenaissanceMan
 
@@ -51,19 +46,18 @@ features = [course, slot, weekday, section]
 
 # construct schedule
 schedule = []
-topic_map = defaultdict(set)
+topic_map = defaultdict(list)
 for idx, (_, row) in enumerate(df.iterrows()):
     crs = str(row["Catalog"])
-    topic_map[row["Categories"]].add(crs)
     slt = slots_for_time_range(row["Mtg Time"], slot.times)
     sec = row["Section"]
     capacity = row["CICScapacity"]
     dys = tuple([day.strip() for day in row["zc.days"].split(" ")])
-    schedule.append(
-        ScheduleItem(features, [crs, slt, dys, sec], index=idx, capacity=capacity)
-    )
+    item = ScheduleItem(features, [crs, slt, dys, sec], index=idx, capacity=capacity)
+    schedule.append(item)
+    topic_map[row["Categories"]].append(item)
 
-topics = sorted([sorted(list(courses)) for courses in topic_map.values()])
+topics = [topic for topic in topic_map.values()]
 
 # global constraints
 course_time_constr = CourseTimeConstraint.from_items(schedule, slot, weekday, SPARSE)
@@ -78,6 +72,7 @@ for i in range(NUM_STUDENTS):
         LOWER_MAX_COURSES_TOTAL,
         UPPER_MAX_COURSES_TOTAL,
         course,
+        section,
         [course_time_constr, course_sect_constr],
         schedule,
         seed=i,

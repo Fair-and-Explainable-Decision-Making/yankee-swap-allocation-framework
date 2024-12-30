@@ -51,7 +51,7 @@ def test_capacity_constraint(course: Course):
         ScheduleItem([course], ["611"], 2),
     ]
     constraint = PreferenceConstraint.from_item_lists(
-        schedule, [["250", "301", "611"]], [3], course
+        schedule, [[("250",), ("301",), ("611",)]], [3], [course]
     )
     valuation = ConstraintSatifactionValuation([constraint])
 

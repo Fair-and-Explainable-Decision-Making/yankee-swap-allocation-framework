@@ -172,8 +172,4 @@ class LegacyStudent:
         Returns:
             List[int]: Indices of desired items in list
         """
-        return [
-            item.index
-            for item in items
-            if item.value(self.course) in self.preferred_courses
-        ]
+        return [item.index for item in items if item in self.preferred_courses]

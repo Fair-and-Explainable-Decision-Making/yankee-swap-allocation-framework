@@ -23,6 +23,25 @@ def test_indicator(bundle_250_301: list[ScheduleItem]):
     np.testing.assert_array_equal(ind.flatten(), [1, 0, 1])
 
 
+def test_preference_with_multiple_features(
+    course: Course,
+    section: Section,
+    bundle_250_301: list[ScheduleItem],
+    bundle_250_301_3: list[ScheduleItem],
+    schedule: list[ScheduleItem],
+):
+    constraint = PreferenceConstraint.from_item_lists(
+        schedule,
+        [[("250", 2), ("301", 1), ("611", 1)]],
+        [1],
+        [course, section],
+        False,
+    )
+
+    assert constraint.satisfies(bundle_250_301)
+    assert not constraint.satisfies(bundle_250_301_3)
+
+
 def test_linear_constraint(
     course: Course,
     bundle_250_301_2: list[ScheduleItem],
@@ -30,14 +49,22 @@ def test_linear_constraint(
 ):
     # sparse
     constraint = PreferenceConstraint.from_item_lists(
-        schedule, [["250", "301", "611"]], [1], course, True
+        schedule,
+        [[("250",), ("301",), ("611",)]],
+        [1],
+        [course],
+        True,
     )
 
     assert not constraint.satisfies(bundle_250_301_2)
 
     # dense
     constraint = PreferenceConstraint.from_item_lists(
-        schedule, [["250", "301", "611"]], [1], course, False
+        schedule,
+        [[("250",), ("301",), ("611",)]],
+        [1],
+        [course],
+        False,
     )
 
     assert not constraint.satisfies(bundle_250_301_2)
@@ -95,10 +122,10 @@ def test_constrained_items(
 
 def test_sparse_addition(course: Course, schedule: List[ScheduleItem]):
     constraint1 = PreferenceConstraint.from_item_lists(
-        schedule, [["250", "301"]], [1], course, True
+        schedule, [[("250",), ("301",)]], [1], [course], True
     )
     constraint2 = PreferenceConstraint.from_item_lists(
-        schedule, [["301", "611"]], [1], course, True
+        schedule, [[("301",), ("611",)]], [1], [course], True
     )
     constraint = constraint1 + constraint2
 
@@ -108,10 +135,10 @@ def test_sparse_addition(course: Course, schedule: List[ScheduleItem]):
 
 def test_dense_addition(course: Course, schedule: List[ScheduleItem]):
     constraint1 = PreferenceConstraint.from_item_lists(
-        schedule, [["250", "301"]], [1], course, False
+        schedule, [[("250",), ("301",)]], [1], [course], False
     )
     constraint2 = PreferenceConstraint.from_item_lists(
-        schedule, [["301", "611"]], [1], course, False
+        schedule, [[("301",), ("611",)]], [1], [course], False
     )
     constraint = constraint1 + constraint2
 
@@ -121,7 +148,7 @@ def test_dense_addition(course: Course, schedule: List[ScheduleItem]):
 
 def test_to_desnse_to_sparse(course: Course, schedule: List[ScheduleItem]):
     constraint = PreferenceConstraint.from_item_lists(
-        schedule, [["250", "301"]], [1], course, False
+        schedule, [[("250",), ("301",)]], [1], [course], False
     )
 
     constraint = constraint.to_dense()
