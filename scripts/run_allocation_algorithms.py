@@ -7,12 +7,10 @@ from fair.agent import LegacyStudent
 from fair.allocation import general_yankee_swap_E, round_robin, serial_dictatorship
 from fair.constraint import CourseTimeConstraint, MutualExclusivityConstraint
 from fair.envy import (
-    EF_1_agents,
-    EF_1_count,
-    EF_agents,
-    EF_count,
-    EF_X_agents,
-    EF_X_count,
+    precompute_bundles_valuations,
+    EF_violations,
+    EF1_violations,
+    EFX_violations,
 )
 from fair.feature import Course, Section, Slot, Weekday, slots_for_time_range
 from fair.item import ScheduleItem
@@ -88,54 +86,81 @@ X_YS, _, _ = general_yankee_swap_E(students, schedule)
 print("YS utilitarian welfare: ", utilitarian_welfare(X_YS, students, schedule))
 print("YS nash welfare: ", nash_welfare(X_YS, students, schedule))
 print("YS leximin vector: ", leximin((X_YS), students, schedule))
-print("YS EF_count: ", EF_count(X_YS, students, schedule))
-print("YS EF_agents: ", EF_agents(X_YS, students, schedule))
-print("YS EF_1_count: ", EF_1_count(X_YS, students, schedule))
-print("YS EF_1_agents: ", EF_1_agents(X_YS, students, schedule))
-print("YS EF_X_count: ", EF_X_count(X_YS, students, schedule))
-print("YS EF_X_agents: ", EF_X_agents(X_YS, students, schedule))
+bundles, valuations = precompute_bundles_valuations(X_YS, students, schedule)
+print(
+    "YS EF violations (total, agents): ",
+    EF_violations(X_YS, students, schedule, valuations),
+)
+print(
+    "YS EF-1 violations (total, agents): ",
+    EF1_violations(X_YS, students, schedule, bundles, valuations),
+)
+print(
+    "YS EF-X violations (total, agents): ",
+    EFX_violations(X_YS, students, schedule, bundles, valuations),
+)
 print("YS PMMS violations (total, agents): ", PMMS_violations(X_YS, students, schedule))
 
 X_SD = serial_dictatorship(students, schedule)
 print("SD utilitarian welfare: ", utilitarian_welfare(X_SD, students, schedule))
 print("SD nash welfare: ", nash_welfare(X_SD, students, schedule))
 print("SD leximin vector: ", leximin(X_SD, students, schedule))
-print("SD EF_count: ", EF_count(X_SD, students, schedule))
-print("SD EF_agents: ", EF_agents(X_SD, students, schedule))
-print("SD EF_1_count: ", EF_1_count(X_SD, students, schedule))
-print("SD EF_1_agents: ", EF_1_agents(X_SD, students, schedule))
-print("SD EF_X_count: ", EF_X_count(X_SD, students, schedule))
-print("SD EF_X_agents: ", EF_X_agents(X_SD, students, schedule))
+bundles, valuations = precompute_bundles_valuations(X_SD, students, schedule)
+print(
+    "SD EF violations (total, agents): ",
+    EF_violations(X_SD, students, schedule, valuations),
+)
+print(
+    "SD EF-1 violations (total, agents): ",
+    EF1_violations(X_SD, students, schedule, bundles, valuations),
+)
+print(
+    "SD EF-X violations (total, agents): ",
+    EFX_violations(X_SD, students, schedule, bundles, valuations),
+)
 print("SD PMMS violations (total, agents): ", PMMS_violations(X_SD, students, schedule))
 
 X_RR = round_robin(students, schedule)
 print("RR utilitarian welfare: ", utilitarian_welfare(X_RR, students, schedule))
 print("RR nash welfare: ", nash_welfare(X_RR, students, schedule))
 print("RR leximin vector: ", leximin(X_RR, students, schedule))
-print("RR EF_count: ", EF_count(X_RR, students, schedule))
-print("RR EF_agents: ", EF_agents(X_RR, students, schedule))
-print("RR EF_1_count: ", EF_1_count(X_RR, students, schedule))
-print("RR EF_1_agents: ", EF_1_agents(X_RR, students, schedule))
-print("RR EF_X_count: ", EF_X_count(X_RR, students, schedule))
-print("RR EF_X_agents: ", EF_X_agents(X_RR, students, schedule))
+bundles, valuations = precompute_bundles_valuations(X_RR, students, schedule)
+print(
+    "RR EF violations (total, agents): ",
+    EF_violations(X_RR, students, schedule, valuations),
+)
+print(
+    "RR EF-1 violations (total, agents): ",
+    EF1_violations(X_RR, students, schedule, bundles, valuations),
+)
+print(
+    "RR EF-X violations (total, agents): ",
+    EFX_violations(X_RR, students, schedule, bundles, valuations),
+)
 print("RR PMMS violations (total, agents): ", PMMS_violations(X_RR, students, schedule))
 
 
-if FIND_OPTIMAL:
-    orig_students = [student.student for student in students]
-    program = StudentAllocationProgram(orig_students, schedule).compile()
-    opt_alloc = program.formulateUSW().solve()
-    X_ILP = opt_alloc.reshape(len(students), len(schedule)).transpose()
-    print("ILP utilitarian welfare: ", utilitarian_welfare(X_ILP, students, schedule))
-    print("ILP nash welfare: ", nash_welfare(X_ILP, students, schedule))
-    print("ILP leximin vector: ", leximin(X_ILP, students, schedule))
-    print("ILP EF_count: ", EF_count(X_ILP, students, schedule))
-    print("ILP EF_agents: ", EF_agents(X_ILP, students, schedule))
-    print("ILP EF_1_count: ", EF_1_count(X_ILP, students, schedule))
-    print("ILP EF_1_agents: ", EF_1_agents(X_ILP, students, schedule))
-    print("ILP EF_X_count: ", EF_X_count(X_ILP, students, schedule))
-    print("ILP EF_X_agents: ", EF_X_agents(X_ILP, students, schedule))
-    print(
-        "ILP PMMS violations (total, agents): ",
-        PMMS_violations(X_ILP, students, schedule),
-    )
+orig_students = [student.student for student in students]
+program = StudentAllocationProgram(orig_students, schedule).compile()
+opt_alloc = program.formulateUSW().solve()
+X_ILP = opt_alloc.reshape(len(students), len(schedule)).transpose()
+print("ILP utilitarian welfare: ", utilitarian_welfare(X_ILP, students, schedule))
+print("ILP nash welfare: ", nash_welfare(X_ILP, students, schedule))
+print("ILP leximin vector: ", leximin(X_ILP, students, schedule))
+bundles, valuations = precompute_bundles_valuations(X_ILP, students, schedule)
+print(
+    "ILP EF violations (total, agents): ",
+    EF_violations(X_ILP, students, schedule, valuations),
+)
+print(
+    "ILP EF-1 violations (total, agents): ",
+    EF1_violations(X_ILP, students, schedule, bundles, valuations),
+)
+print(
+    "ILP EF-X violations (total, agents): ",
+    EFX_violations(X_ILP, students, schedule, bundles, valuations),
+)
+print(
+    "ILP PMMS violations (total, agents): ",
+    PMMS_violations(X_ILP, students, schedule),
+)
