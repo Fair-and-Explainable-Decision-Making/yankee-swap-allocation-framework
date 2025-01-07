@@ -230,8 +230,8 @@ def PMMS_violations(
             student_2 = agents[j]
             bundle_2 = bundles[j]
 
-            if (valuations[i, i] < len(bundle_2) - 1) or (
-                valuations[j, j] < len(bundle_1) - 1
+            if (valuations[i, i] < valuations[i,j] - 1) or (
+                valuations[j, j] < valuations[j,i] - 1
             ):
                 PMMS = pairwise_maximin_share(student_1, student_2, bundle_1, bundle_2)
                 PMMS_matrix[i, j] = student_1.valuation(bundle_1) - PMMS[student_1]
