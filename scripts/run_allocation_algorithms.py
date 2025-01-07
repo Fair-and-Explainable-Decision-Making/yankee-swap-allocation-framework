@@ -7,14 +7,19 @@ from fair.agent import LegacyStudent
 from fair.allocation import general_yankee_swap_E, round_robin, serial_dictatorship
 from fair.constraint import CourseTimeConstraint, MutualExclusivityConstraint
 from fair.envy import (
-    precompute_bundles_valuations,
     EF_violations,
     EF1_violations,
     EFX_violations,
 )
 from fair.feature import Course, Section, Slot, Weekday, slots_for_time_range
 from fair.item import ScheduleItem
-from fair.metrics import PMMS_violations, leximin, nash_welfare, utilitarian_welfare
+from fair.metrics import (
+    leximin,
+    nash_welfare,
+    utilitarian_welfare,
+    precompute_bundles_valuations,
+    PMMS_violations,
+)
 from fair.optimization import StudentAllocationProgram
 from fair.simulation import RenaissanceMan
 
@@ -99,7 +104,10 @@ print(
     "YS EF-X violations (total, agents): ",
     EFX_violations(X_YS, students, schedule, bundles, valuations),
 )
-print("YS PMMS violations (total, agents): ", PMMS_violations(X_YS, students, schedule))
+print(
+    "YS PMMS violations (total, agents): ",
+    PMMS_violations(X_YS, students, schedule, bundles, valuations),
+)
 
 X_SD = serial_dictatorship(students, schedule)
 print("SD utilitarian welfare: ", utilitarian_welfare(X_SD, students, schedule))
@@ -118,7 +126,10 @@ print(
     "SD EF-X violations (total, agents): ",
     EFX_violations(X_SD, students, schedule, bundles, valuations),
 )
-print("SD PMMS violations (total, agents): ", PMMS_violations(X_SD, students, schedule))
+print(
+    "SD PMMS violations (total, agents): ",
+    PMMS_violations(X_SD, students, schedule, bundles, valuations),
+)
 
 X_RR = round_robin(students, schedule)
 print("RR utilitarian welfare: ", utilitarian_welfare(X_RR, students, schedule))
@@ -137,7 +148,10 @@ print(
     "RR EF-X violations (total, agents): ",
     EFX_violations(X_RR, students, schedule, bundles, valuations),
 )
-print("RR PMMS violations (total, agents): ", PMMS_violations(X_RR, students, schedule))
+print(
+    "RR PMMS violations (total, agents): ",
+    PMMS_violations(X_RR, students, schedule, bundles, valuations),
+)
 
 
 orig_students = [student.student for student in students]
@@ -162,5 +176,5 @@ print(
 )
 print(
     "ILP PMMS violations (total, agents): ",
-    PMMS_violations(X_ILP, students, schedule),
+    PMMS_violations(X_ILP, students, schedule, bundles, valuations),
 )

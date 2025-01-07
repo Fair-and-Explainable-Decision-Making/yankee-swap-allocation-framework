@@ -1,33 +1,8 @@
 import numpy as np
 
 from .agent import BaseAgent
-from .allocation import get_bundle_from_allocation_matrix
+from .metrics import precompute_bundles_valuations
 from .item import ScheduleItem
-
-
-def precompute_bundles_valuations(
-    X: type[np.ndarray], agents: list[BaseAgent], items: list[ScheduleItem]
-):
-    """Precompute all agents bundles and all agent valuations for said bundles.
-    This is a step necessary to run all envy metrics.
-
-    Args:
-        X (type[np.ndarray]): Allocation matrix
-        agents (list[BaseAgent]): Agents from class BaseAgent
-        schedule (list[ScheduleItem]): Items from class BaseItem
-
-    Returns:
-        bundles (list(list[ScheduleItem])): ordered list of agnets bundles
-        valuations (type[np.ndarray]): len(agents) x len(agents) matrix, element i,j is agent's i valuation of agent's j bundle under X
-    """
-    bundles = [
-        get_bundle_from_allocation_matrix(X, items, i) for i in range(len(agents))
-    ]
-    valuations = np.zeros((len(agents), len(agents)))
-    for i, agent in enumerate(agents):
-        for j, bundle in enumerate(bundles):
-            valuations[i, j] = agent.valuation(bundle)
-    return bundles, valuations
 
 
 def EF_violations(
