@@ -190,7 +190,6 @@ def pairwise_maximin_share(
     new_schedule = sub_schedule([bundle_1, bundle_2])
 
     PMMS[agent1] = yankee_swap_sub_problem(agent1, new_schedule)
-    PMMS[agent2] = yankee_swap_sub_problem(agent2, new_schedule)
 
     return PMMS
 
@@ -230,11 +229,12 @@ def PMMS_violations(
             student_2 = agents[j]
             bundle_2 = bundles[j]
 
-            if (valuations[i, i] < valuations[i,j] - 1) or (
-                valuations[j, j] < valuations[j,i] - 1
-            ):
+            if valuations[i, i] < valuations[i, j] - 1:
                 PMMS = pairwise_maximin_share(student_1, student_2, bundle_1, bundle_2)
-                PMMS_matrix[i, j] = student_1.valuation(bundle_1) - PMMS[student_1]
-                PMMS_matrix[j, i] = student_2.valuation(bundle_2) - PMMS[student_2]
+                PMMS_matrix[i, j] = valuations[i, i] - PMMS[student_1]
+
+            if valuations[j, j] < valuations[j, i] - 1:
+                PMMS = pairwise_maximin_share(student_2, student_1, bundle_2, bundle_1)
+                PMMS_matrix[j, i] = valuations[j, j] - PMMS[student_2]
 
     return np.sum(PMMS_matrix < 0), np.sum(np.any(PMMS_matrix < 0, axis=1))
