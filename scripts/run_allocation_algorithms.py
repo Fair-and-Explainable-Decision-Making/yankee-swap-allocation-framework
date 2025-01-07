@@ -13,7 +13,13 @@ from fair.envy import (
 )
 from fair.feature import Course, Section, Slot, Weekday, slots_for_time_range
 from fair.item import ScheduleItem
-from fair.metrics import leximin, nash_welfare, utilitarian_welfare, precompute_bundles_valuations, PMMS_violations
+from fair.metrics import (
+    leximin,
+    nash_welfare,
+    utilitarian_welfare,
+    precompute_bundles_valuations,
+    PMMS_violations,
+)
 from fair.optimization import StudentAllocationProgram
 from fair.simulation import RenaissanceMan
 
@@ -98,7 +104,10 @@ print(
     "YS EF-X violations (total, agents): ",
     EFX_violations(X_YS, students, schedule, bundles, valuations),
 )
-print("YS PMMS violations (total, agents): ", PMMS_violations(X_YS, students, schedule, bundles, valuations))
+print(
+    "YS PMMS violations (total, agents): ",
+    PMMS_violations(X_YS, students, schedule, bundles, valuations),
+)
 
 X_SD = serial_dictatorship(students, schedule)
 print("SD utilitarian welfare: ", utilitarian_welfare(X_SD, students, schedule))
@@ -117,7 +126,10 @@ print(
     "SD EF-X violations (total, agents): ",
     EFX_violations(X_SD, students, schedule, bundles, valuations),
 )
-print("SD PMMS violations (total, agents): ", PMMS_violations(X_SD, students, schedule, bundles, valuations))
+print(
+    "SD PMMS violations (total, agents): ",
+    PMMS_violations(X_SD, students, schedule, bundles, valuations),
+)
 
 X_RR = round_robin(students, schedule)
 print("RR utilitarian welfare: ", utilitarian_welfare(X_RR, students, schedule))
@@ -136,7 +148,10 @@ print(
     "RR EF-X violations (total, agents): ",
     EFX_violations(X_RR, students, schedule, bundles, valuations),
 )
-print("RR PMMS violations (total, agents): ", PMMS_violations(X_RR, students, schedule, bundles, valuations))
+print(
+    "RR PMMS violations (total, agents): ",
+    PMMS_violations(X_RR, students, schedule, bundles, valuations),
+)
 
 
 orig_students = [student.student for student in students]
