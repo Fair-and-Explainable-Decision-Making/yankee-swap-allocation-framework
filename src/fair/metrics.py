@@ -82,13 +82,37 @@ def leximin(X: type[np.ndarray], agents: list[BaseAgent], items: list[ScheduleIt
     return valuations
 
 
+def precompute_bundles_valuations(
+    X: type[np.ndarray], agents: list[BaseAgent], items: list[ScheduleItem]
+):
+    """Precompute all agents bundles and all agent valuations for said bundles.
+    This is a step necessary to run all envy metrics.
+
+    Args:
+        X (type[np.ndarray]): Allocation matrix
+        agents (list[BaseAgent]): Agents from class BaseAgent
+        schedule (list[ScheduleItem]): Items from class BaseItem
+
+    Returns:
+        bundles (list(list[ScheduleItem])): ordered list of agnets bundles
+        valuations (type[np.ndarray]): len(agents) x len(agents) matrix, element i,j is agent's i valuation of agent's j bundle under X
+    """
+    bundles = [
+        get_bundle_from_allocation_matrix(X, items, i) for i in range(len(agents))
+    ]
+    valuations = np.zeros((len(agents), len(agents)))
+    for i, agent in enumerate(agents):
+        for j, bundle in enumerate(bundles):
+            valuations[i, j] = agent.valuation(bundle)
+    return bundles, valuations
+
+
 # FUNCTIONS TO COMPUTE PAIRWISE MAXIMIN SHARE
 
 
 def yankee_swap_sub_problem(
     agent: type[BaseAgent],
     new_schedule: list[ScheduleItem],
-    course_strings: list[str],
 ):
     """Given an agent and information of a reduced schedule (new_schedule, course_strings, course), compute their MMS for the reduced problem,
     considering 2 identical agents competing for the items in the reduced schedule.
@@ -164,16 +188,19 @@ def pairwise_maximin_share(
         sched.capacity = 1
 
     new_schedule = sub_schedule([bundle_1, bundle_2])
-    course_strings = sorted([item.values[0] for item in new_schedule])
 
-    PMMS[agent1] = yankee_swap_sub_problem(agent1, new_schedule, course_strings)
-    PMMS[agent2] = yankee_swap_sub_problem(agent2, new_schedule, course_strings)
+    PMMS[agent1] = yankee_swap_sub_problem(agent1, new_schedule)
+    PMMS[agent2] = yankee_swap_sub_problem(agent2, new_schedule)
 
     return PMMS
 
 
 def PMMS_violations(
-    X: type[np.ndarray], agents: list[BaseAgent], items: list[ScheduleItem]
+    X: type[np.ndarray],
+    agents: list[BaseAgent],
+    items: list[ScheduleItem],
+    bundles: list[list[ScheduleItem]] | None = None,
+    valuations: type[np.ndarray] | None = None,
 ):
     """Compute number of violations of the Pairwise Maximin Share (PMMS) for an allocation X
 
@@ -185,24 +212,29 @@ def PMMS_violations(
          X (type[np.ndarray]): Allocation matrix
          agents (list[BaseAgent]): Agents from class BaseAgent
          schedule (list[ScheduleItem]): Items from class BaseItem
+         bundles (list(list[ScheduleItem])): List of all agents bundles
+         valuations (type[np.ndarray]): Valuations of all agents for all bundles under X
 
      Returns:
          int: Number of PMMS violations
          int: Number of agents who did not receive their PMMS in every comparison
     """
+    if valuations is None:
+        bundles, valuations = precompute_bundles_valuations(X, agents, items)
+
     PMMS_matrix = np.zeros((len(agents), len(agents)))
     for i, student_1 in enumerate(agents):
-        bundle_1 = get_bundle_from_allocation_matrix(X, items, i)
+        bundle_1 = bundles[i]
 
         for j in range(i + 1, len(agents)):
             student_2 = agents[j]
-            bundle_2 = get_bundle_from_allocation_matrix(X, items, j)
+            bundle_2 = bundles[j]
 
-            if len(bundle_1) == 0 and len(bundle_2) == 0:
-                continue
-
-            PMMS = pairwise_maximin_share(student_1, student_2, bundle_1, bundle_2)
-            PMMS_matrix[i, j] = student_1.valuation(bundle_1) - PMMS[student_1]
-            PMMS_matrix[j, i] = student_2.valuation(bundle_2) - PMMS[student_2]
+            if (valuations[i, i] < len(bundle_2) - 1) or (
+                valuations[j, j] < len(bundle_1) - 1
+            ):
+                PMMS = pairwise_maximin_share(student_1, student_2, bundle_1, bundle_2)
+                PMMS_matrix[i, j] = student_1.valuation(bundle_1) - PMMS[student_1]
+                PMMS_matrix[j, i] = student_2.valuation(bundle_2) - PMMS[student_2]
 
     return np.sum(PMMS_matrix < 0), np.sum(np.any(PMMS_matrix < 0, axis=1))
